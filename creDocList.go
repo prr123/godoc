@@ -13,6 +13,7 @@ import (
 	"log"
 	"strings"
 	"bytes"
+	"time"
 )
 
 func main() {
@@ -44,6 +45,10 @@ func main() {
 	defer outfil.Close()
 
 	outfil.WriteString("# GoDir\n\n")
+	timStr := fmt.Sprintf("created on %s\n\n", time.Now().Format(time.RFC1123))
+
+	outfil.WriteString(timStr)
+
 
 	for _, fil := range files {
 		nam := fil.Name()
