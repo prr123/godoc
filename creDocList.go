@@ -1,5 +1,5 @@
 // creDoc.go
-// program that creates an md file from
+// program that creates an md file containing the header description of each go file in the working directory.
 // author: prr azul software
 // date: 29 May 2023
 // copyright 2023 prr, azul software
