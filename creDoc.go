@@ -52,6 +52,20 @@ func main() {
 	log.Printf("read file: %s size: %d\n", inFilnam, len(data))
 
 	log.Printf("creDoc start parsing\n")
+	stLin := 0
+	endLin:=0
+	linCount :=0
+	for i:=0; i< len(data); i++ {
+		if data[i] == '\n' {
+			endLin = i
+			lin := data[stLin:endLin]
+			stLin = i+1
+			linCount++
+fmt.Printf("line[%d]: %s\n", linCount, string(lin))
+		}
+
+	}
+
 
 	log.Printf("creDoc end parsing\n")
 }
