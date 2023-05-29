@@ -101,7 +101,7 @@ func WriteFileHeader(outfil *os.File, filnam string) (err error) {
 		if pidx > -1 {break}
 
 //		fmt.Printf("eol: %d, lin: %s\n", eol, string(lin[:eol+1]))
-		outStr += string(lin[ist:eol+1])
+		outStr += string(lin[ist:eol+1]) +"\n"
 		offset += int64(eol+1)
 	}
 
