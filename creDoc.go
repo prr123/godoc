@@ -1,5 +1,5 @@
 // creDoc.go
-// program that creates an md file from
+// program that creates an md file describing each type, function and method of a go file
 // author: prr azul software
 // date: 29 May 2023
 // copyright 2023 prr, azul software
