@@ -49,17 +49,17 @@ func main() {
 		nam := fil.Name()
 		idx := strings.Index(nam, ".go")
 		if idx > 0 {
-			fmt.Println(nam)
+//			fmt.Println(nam)
 			namStr := string(nam[:idx])
 			outfil.WriteString("## " + namStr +"\n\n")
-			err = GetFileHeader(outfil, nam)
-			if err != nil {log.Fatalf("GetFileHeader: %v\n", err)}
+			err = WriteFileHeader(outfil, nam)
+			if err != nil {log.Fatalf("WriteFileHeader: %v\n", err)}
 		}
 	}
 	log.Printf("*** End CreDocList ***\n")
 }
 
-func GetFileHeader(outfil *os.File, filnam string) (err error) {
+func WriteFileHeader(outfil *os.File, filnam string) (err error) {
 
 	log.Printf("file name: %s\n", filnam)
 	offset := int64(0)
@@ -67,7 +67,8 @@ func GetFileHeader(outfil *os.File, filnam string) (err error) {
 	infil, err := os.Open(filnam)
 	if err != nil {return fmt.Errorf("os.Open:%v\n", err)}
 	defer infil.Close()
-
+	outStr :=""
+	pidx := -1
 	for i:=0; i< 10; i++ {
 		_, err =infil.ReadAt(lin,offset)
 //		fmt.Printf("eol: %d, lin: %s\n", offset, string(lin))
@@ -86,16 +87,72 @@ func GetFileHeader(outfil *os.File, filnam string) (err error) {
 			}
 			if eol > -1 {break}
 		}
+
 		if eol<0 {return fmt.Errorf("EOL not found!\n")}
 
-		pidx := bytes.Index(lin[:eol+1],[]byte("package"))
+		pidx = bytes.Index(lin[:eol+1],[]byte("package"))
 //		fmt.Printf("pidx: %d, %s\n", pidx, string(lin[:eol+1]))
+
 		if pidx > -1 {break}
 
 //		fmt.Printf("eol: %d, lin: %s\n", eol, string(lin[:eol+1]))
-		outfil.WriteString(string(lin[ist:eol+1]))
+		outStr += string(lin[ist:eol+1])
 		offset += int64(eol+1)
 	}
+
+	useStr :=""
+	for i:=0; i< 20; i++ {
+		n, err :=infil.ReadAt(lin,offset)
+//		fmt.Printf("eol: %d, lin: %s\n", offset, string(lin))
+//		if err != nil {return fmt.Errorf("os.Read:%v\n", err)}
+		if err != nil {break}
+		eol := -1
+		for j:=0; j< n; j++ {
+			if lin[j] == '\n' {
+				eol = j
+				break
+			}
+		}
+		if eol<0 {return fmt.Errorf("EOL not found!\n")}
+
+		idx := bytes.Index(lin[:eol+1], []byte("useStr"))
+		if idx > -1 {
+			endidx := eol
+			stidx := idx+7
+			state :=1
+
+			for k:=idx+7; k<eol+1; k++ {
+				switch lin[k] {
+				case '"':
+					switch state {
+					case 1:
+						stidx = k+1
+						state = 2
+					case 2:
+						endidx = k
+						state = 0
+					default:
+						return fmt.Errorf("parsing useStr: unknown state")
+				}
+				default:
+				}
+				if state == 0 {break}
+			}
+
+//fmt.Printf("useStr: %s\n", string(lin[idx:eol+1]))
+
+//fmt.Printf("idx: %d stidx: %d endidx: %d eol: %d str: %s\n", idx, stidx, endidx, eol, string(lin[stidx: endidx]))
+
+			useStr = string(lin[stidx: endidx]) +"\n\n"
+			break
+		}
+		offset += int64(eol+1)
+	}
+
+	if len(useStr) > 0 {outfil.WriteString(useStr)}
+	
+
+	outfil.WriteString(outStr)
 
 	return nil
 }
